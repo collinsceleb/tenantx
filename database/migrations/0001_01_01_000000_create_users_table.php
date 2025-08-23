@@ -12,11 +12,23 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
+            $table->uuid('id')->primary();
+            $table->string('first_name');
+            $table->string('last_name');
             $table->string('email')->unique();
+            $table->string('is_email_verified')->default(false);
+            $table->string('is_phone_verified')->default(false);
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('phone')->nullable()->unique();
+            $table->string('username')->nullable()->unique();
+            $table->string('avatar_url')->nullable();
+            $table->enum('status', ['active', 'suspended', 'deleted'])->default('active');
+            $table->string('mfa_secret')->nullable();
+            $table->boolean('mfa_enabled')->default(false);
+            $table->uuid('created_by')->nullable();
+            $table->uuid('updated_by')->nullable();
+            $table->softDeletes();
             $table->rememberToken();
             $table->timestamps();
         });
@@ -31,6 +43,8 @@ return new class extends Migration
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();
             $table->string('ip_address', 45)->nullable();
+            $table->timestamp('last_login_at')->nullable();
+            $table->string('last_login_ip')->nullable();
             $table->text('user_agent')->nullable();
             $table->longText('payload');
             $table->integer('last_activity')->index();
