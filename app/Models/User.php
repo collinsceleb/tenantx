@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Ramsey\Uuid\Uuid;
 
 class User extends Authenticatable
 {
@@ -18,9 +19,22 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
         'email',
+        'phone',
         'password',
+        'first_name',
+        'last_name',
+        'username',
+        'avatar_url',
+        'is_email_verified',
+        'is_phone_verified',
+        'status',
+        'last_login_at',
+        'last_login_ip',
+        'mfa_enabled',
+        'mfa_secret',
+        'created_by',
+        'updated_by',
     ];
 
     /**
@@ -30,8 +44,18 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
+        'mfa_secret',
         'remember_token',
     ];
+
+    protected static function booted()
+    {
+        static::creating(function ($user) {
+            if (!$user->id) {
+                $user->id = Uuid::uuid4()->toString();
+            }
+        });
+    }
 
     /**
      * Get the attributes that should be cast.
