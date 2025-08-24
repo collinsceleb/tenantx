@@ -18,6 +18,10 @@ Route::post('/login', [AuthenticatedSessionController::class, 'store'])
     ->middleware('guest:sanctum')
     ->name('login');
 
+Route::post('/refresh', [AuthenticatedSessionController::class, 'refresh'])
+    ->middleware('guest:sanctum')
+    ->name('refresh');
+
 Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
     ->middleware('guest:sanctum')
     ->name('password.email');
