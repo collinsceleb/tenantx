@@ -48,15 +48,6 @@ return new class extends Migration
             $table->integer('last_activity')->index();
             $table->timestamps();
         });
-
-        Schema::create('user_logins', function (Blueprint $table) {
-            $table->id();
-            $table->foreignUuid('user_id')->nullable()->constrained('users')->onDelete('cascade');
-            $table->timestamp('last_login_at')->nullable();
-            $table->string('last_login_ip')->nullable();
-            $table->string('user_agent')->nullable();
-            $table->timestamps();
-        });
     }
 
     /**
