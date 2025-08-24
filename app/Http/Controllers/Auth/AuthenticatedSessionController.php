@@ -5,34 +5,45 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AuthenticatedSessionController extends Controller
 {
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): Response
+    public function store(LoginRequest $request)
     {
         $request->authenticate();
 
-        $request->session()->regenerate();
+        // Get the logged-in user
+        $user = Auth::user();
+        DB::table('user_logins')->updateOrInsert(
+            ['user_id' => $user->id],
+            [
+                'user_agent' => $request->userAgent(),
+                'last_login_at' => now(),
+                'last_login_ip' => $request->ip(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
 
-        return response()->noContent();
+        // Create Sanctum token
+        $token = $user->createToken('api_token')->plainTextToken;
+
+        return response()->json([
+            'user' => $user,
+            'token' => $token,
+        ]);
     }
 
-    /**
-     * Destroy an authenticated session.
-     */
-    public function destroy(Request $request): Response
+    public function destroy(Request $request)
     {
-        Auth::guard('web')->logout();
+        // Revoke current token
+        $request->user()->tokens()->where('id', $request->user()->currentAccessToken()->id)->delete();
 
-        $request->session()->invalidate();
-
-        $request->session()->regenerateToken();
-
-        return response()->noContent();
+        return response()->json(['message' => 'Logged out successfully']);
     }
 }

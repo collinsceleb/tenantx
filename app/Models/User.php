@@ -2,16 +2,26 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 use Ramsey\Uuid\Uuid;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasApiTokens;
+
+    /**
+     * Indicates if the model's ID is auto-incrementing.
+     */
+    public $incrementing = false;
+
+    /**
+     * The data type of the auto-incrementing ID.
+     */
+    protected $keyType = 'string';
 
     /**
      * The attributes that are mass assignable.
@@ -29,8 +39,6 @@ class User extends Authenticatable
         'is_email_verified',
         'is_phone_verified',
         'status',
-        'last_login_at',
-        'last_login_ip',
         'mfa_enabled',
         'mfa_secret',
         'created_by',
@@ -51,7 +59,7 @@ class User extends Authenticatable
     protected static function booted()
     {
         static::creating(function ($user) {
-            if (!$user->id) {
+            if (empty($user->id)) {
                 $user->id = Uuid::uuid4()->toString();
             }
         });
