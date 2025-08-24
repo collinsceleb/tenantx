@@ -14,28 +14,33 @@ use Illuminate\Validation\Rules;
 class RegisteredUserController extends Controller
 {
     /**
-     * Handle an incoming registration request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
+     * Handle an incoming registration request (API).
      */
-    public function store(Request $request): Response
+    public function store(Request $request)
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name'  => ['required', 'string', 'max:255'],
+            'email'      => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'username'   => ['required', 'string', 'max:255', 'unique:users,username'],
+            'phone'      => ['required', 'string', 'max:255', 'unique:users,phone'],
+            'password'   => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->string('password')),
+            'first_name' => $request->first_name,
+            'last_name'  => $request->last_name,
+            'email'      => $request->email,
+            'username'   => $request->username,
+            'phone'      => $request->phone,
+            'password'   => Hash::make($request->password),
         ]);
 
-        event(new Registered($user));
+        $token = $user->createToken('api_token')->plainTextToken;
 
-        Auth::login($user);
-
-        return response()->noContent();
+        return response()->json([
+            'user'  => $user,
+            'token' => $token,
+        ], 201);
     }
 }
